@@ -21,48 +21,55 @@ public class MainActivity extends Activity {
     private ArrayAdapter<String> itemsAdapter;
     TextView lvNewItem;
     private ListView listItems;
-    private final static String STORETEXT="storetext";
+    private final static String storeText="storetext";
     @Override
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         temps = new ArrayList<String>();
-        listItems = (ListView) findViewById(R.id.listViewItems);
 
+        //Declaring the textview to get user input, and the list view to display the input
+        listItems = (ListView) findViewById(R.id.listViewItems);
         lvNewItem=(EditText)findViewById(R.id.addItem);
+
+        //Checking the txt file for any saved user inputs
         try {
-            BufferedReader inputReader = new BufferedReader(new InputStreamReader(openFileInput(STORETEXT)));
+            BufferedReader inputReader = new BufferedReader(new InputStreamReader(openFileInput(storeText)));
             String inputString;
             while ((inputString = inputReader.readLine()) != null) {
                 temps.add(inputString);
             }
-
             setupListViewListener();
             itemsAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, temps);
             listItems.setAdapter(itemsAdapter);
 
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
         }
     }
 
     public void addItem(View view) {
+        //Adding items to the txt file to get stored and displaying the user input on the list view
         try {
-            FileOutputStream fos = openFileOutput(STORETEXT, Context.MODE_APPEND);
+            FileOutputStream fos = openFileOutput(storeText, Context.MODE_APPEND);
             String write_line = (lvNewItem).getText().toString();
             write_line = write_line + "\n";
             fos.write(write_line.getBytes());
             fos.close();
+            //Getting the user input only if input is not empty
             if (!lvNewItem.getText().toString().isEmpty()) {
                 temps.add(lvNewItem.getText().toString());
                 listItems.setAdapter(itemsAdapter);
                 lvNewItem.setText("");
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    //Deleting items from the listview if the user holds down on an item
     private void setupListViewListener() {
         listItems.setOnItemLongClickListener(
             new AdapterView.OnItemLongClickListener() {
@@ -71,22 +78,26 @@ public class MainActivity extends Activity {
                                                View item, int pos, long id) {
                     temps.remove(pos);
                     itemsAdapter.notifyDataSetChanged();
+                    //Deleting the old txt file with the item that has been removed
                     try {
-                        FileOutputStream writer = openFileOutput(STORETEXT,Context.MODE_PRIVATE);
+                        FileOutputStream writer = openFileOutput(storeText,Context.MODE_PRIVATE);
                         writer.write(new String().getBytes());
                         writer.close();
                     }
                     catch (Exception e) {
                     }
+
+                    //Updating the txt file with the deleted item removed
                     try {
-                        FileOutputStream fos = openFileOutput(STORETEXT, Context.MODE_APPEND);
+                        FileOutputStream fos = openFileOutput(storeText, Context.MODE_APPEND);
                         for (int i=0; i< temps.toArray().length; i++){
                             String write_line = temps.get(i).toString();
                             write_line = write_line + "\n";
                             fos.write(write_line.getBytes());
                         }
                         fos.close();
-                    } catch (Exception e) {
+                    }
+                    catch (Exception e) {
                         lvNewItem.setText(e.toString());
                         e.printStackTrace();
                     }
